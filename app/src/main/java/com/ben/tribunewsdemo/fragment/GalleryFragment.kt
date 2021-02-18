@@ -11,7 +11,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ben.tribunewsdemo.R
-import com.ben.tribunewsdemo.api.ApiRequests
+import com.ben.tribunewsdemo.api.ApiService
+import com.ben.tribunewsdemo.api.RetrofitClientInstance
 import com.ben.tribunewsdemo.items.PhotoItem
 import com.ben.tribunewsdemo.utils.BASE_URL
 import com.mikepenz.fastadapter.FastAdapter
@@ -23,9 +24,6 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.awaitResponse
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
-import java.lang.reflect.TypeVariable
-import kotlin.reflect.KClass
 
 /**
  * A simple [Fragment] subclass.
@@ -59,11 +57,12 @@ class GalleryFragment : Fragment() {
             this.layoutManager = GridLayoutManager(context, 3)
         }
 
-        val tribuNewsApi = initRetrofit(BASE_URL)
+        val tribuNewsService = RetrofitClientInstance.retrofitInstance?.create(ApiService::class.java)
 
         //Input Output dispatcher for managing data
         GlobalScope.launch(Dispatchers.IO) {
-            val response = tribuNewsApi.onGetAllPictures().awaitResponse()
+
+            val response = tribuNewsService?.onGetAllPictures()?.awaitResponse() ?: return@launch
             if(response.isSuccessful) {
                 val data = response.body()!!
                 Log.d("test", "${data.files.size}")
@@ -80,12 +79,6 @@ class GalleryFragment : Fragment() {
             }
         }
     }
-
-    private fun initRetrofit(baseUrl: String) = Retrofit.Builder()
-        .baseUrl(baseUrl)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(ApiRequests::class.java)
 
     companion object {
         @JvmStatic
