@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/uploadPhotoFragment"
-        android:name="com.ben.tribunewsdemo.UploadPhotoFragment"
+        android:name="com.ben.tribunewsdemo.fragment.UploadPhotoFragment"
         android:label="@string/upload_photo"
         tools:layout="@layout/fragment_upload_photo" />
     <fragment
         android:id="@+id/galleryFragment"
-        android:name="com.ben.tribunewsdemo.GalleryFragment"
+        android:name="com.ben.tribunewsdemo.fragment.GalleryFragment"
         android:label="@string/gallery"
         tools:layout="@layout/fragment_gallery" />
 </navigation>
