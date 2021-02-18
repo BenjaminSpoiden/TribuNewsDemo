@@ -1,4 +1,4 @@
-package com.ben.tribunewsdemo.api
+package com.ben.tribunewsdemo.api.model
 
 
 data class Images(

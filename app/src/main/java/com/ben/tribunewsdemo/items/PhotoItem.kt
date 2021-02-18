@@ -30,6 +30,7 @@ class PhotoItem(val fileUrl: String? = null): AbstractItem<PhotoItem.PhotoViewHo
                 .with(photo)
                 .load(item.fileUrl)
                 .centerCrop()
+                .placeholder(R.drawable.ic_baseline_photo_24)
                 .into(photo)
         }
 
