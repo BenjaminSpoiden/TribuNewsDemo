@@ -4,5 +4,6 @@
     <string name="gallery">Gallery</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="loading_data">Loading data...</string>
+    <string name="loading_data">Loading data…</string>
+    <string name="upload_an_image">Upload images</string>
 </resources>

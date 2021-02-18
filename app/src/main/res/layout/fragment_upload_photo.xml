@@ -5,14 +5,76 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- TODO: Update blank fragment layout -->
-
-
-    <TextView
+    <GridLayout
+        android:id="@+id/upload_photo_gridLayout"
+        android:columnCount="2"
+        android:useDefaultMargins="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Upload Fragment"
-        android:textSize="25sp"
+        app:layout_constraintBottom_toTopOf="@+id/choose_indicator_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/upload_photo_display"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:background="@drawable/image_view_border"
+            android:contentDescription="photo-display-upload"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+        <ImageView
+            android:id="@+id/upload_photo_display2"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:background="@drawable/image_view_border"
+            android:contentDescription="photo-display-upload"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+        <ImageView
+            android:id="@+id/upload_photo_display3"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:background="@drawable/image_view_border"
+            android:contentDescription="photo-display-upload"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+        <ImageView
+            android:id="@+id/upload_photo_display4"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:background="@drawable/image_view_border"
+            android:contentDescription="photo-display-upload"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </GridLayout>
+
+    <TextView
+        android:id="@+id/choose_indicator_text"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:text="Click to add files"
+        android:textAlignment="center"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/upload_an_image"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

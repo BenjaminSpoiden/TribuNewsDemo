@@ -17,10 +17,7 @@ import com.ben.tribunewsdemo.items.PhotoItem
 import com.ben.tribunewsdemo.utils.BASE_URL
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.awaitResponse
 import retrofit2.converter.gson.GsonConverterFactory
@@ -60,7 +57,8 @@ class GalleryFragment : Fragment() {
         val tribuNewsService = RetrofitClientInstance.retrofitInstance?.create(ApiService::class.java)
 
         //Input Output dispatcher for managing data
-        GlobalScope.launch(Dispatchers.IO) {
+
+        CoroutineScope(Dispatchers.IO).launch {
 
             val response = tribuNewsService?.onGetAllPictures()?.awaitResponse() ?: return@launch
             if(response.isSuccessful) {
