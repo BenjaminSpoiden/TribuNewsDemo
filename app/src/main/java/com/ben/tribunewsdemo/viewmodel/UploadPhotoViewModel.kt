@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.ben.tribunewsdemo.api.network.TribuNewsNetwork
 import com.ben.tribunewsdemo.interfaces.CallbackListener
+import com.ben.tribunewsdemo.interfaces.OnAddListener
 import com.ben.tribunewsdemo.utils.getFiles
 import kotlinx.coroutines.launch
 import okhttp3.MediaType
@@ -17,12 +18,14 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.http.Part
 
+
 class UploadPhotoViewModel(application: Application): AndroidViewModel(application) {
     var callbackListener: CallbackListener<ResponseBody>? = null
+    var onAddListener: OnAddListener? = null
 
     private val _filesUri: MutableLiveData<MutableList<Uri>> = MutableLiveData(mutableListOf())
-    val filesUri: LiveData<List<Uri>>
-        get() = _filesUri as LiveData<List<Uri>>
+    val filesUri: LiveData<MutableList<Uri>>
+        get() = _filesUri
 
 
     private val _isEnabled: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -36,7 +39,7 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         @Part files: List<MultipartBody.Part>
     ) {
         viewModelScope.launch {
-           TribuNewsNetwork.retrofit?.onUploadPicture(files)?.enqueue(object: Callback<ResponseBody> {
+           TribuNewsNetwork.retrofit?.onUploadPictures(files)?.enqueue(object: Callback<ResponseBody> {
                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                    callbackListener?.onResponse(call, response)
                }
@@ -49,7 +52,11 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
     }
 
     fun onAddItem(fileUri: Uri) {
-        _filesUri.value?.add(fileUri)
+        if(filesUri.value?.size!! < 4) {
+            _filesUri.value?.add(fileUri)
+        } else {
+            onAddListener?.onOverCapacity()
+        }
     }
 
     fun onUpload() {
@@ -58,8 +65,7 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         files?.forEach { file ->
             val requestFile = RequestBody.create(MediaType.parse("image/*"), file)
 
-            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            parts.add(body)
+            parts.add(MultipartBody.Part.createFormData("file", file.name, requestFile))
         }
         onUploadPhotos(parts)
     }

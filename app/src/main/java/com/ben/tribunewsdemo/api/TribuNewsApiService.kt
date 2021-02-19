@@ -13,5 +13,5 @@ interface TribuNewsApiService {
 
     @Multipart
     @POST("/pic-upload")
-    fun onUploadPicture(@Part files: List<MultipartBody.Part>): Call<ResponseBody>
+    fun onUploadPictures(@Part files: List<MultipartBody.Part>): Call<ResponseBody>
 }

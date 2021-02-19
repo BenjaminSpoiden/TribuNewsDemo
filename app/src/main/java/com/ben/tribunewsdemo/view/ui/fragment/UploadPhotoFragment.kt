@@ -16,6 +16,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
@@ -26,6 +28,7 @@ import com.ben.tribunewsdemo.BuildConfig
 import com.ben.tribunewsdemo.R
 import com.ben.tribunewsdemo.databinding.FragmentUploadPhotoBinding
 import com.ben.tribunewsdemo.interfaces.CallbackListener
+import com.ben.tribunewsdemo.interfaces.OnAddListener
 import com.ben.tribunewsdemo.utils.PhotoMethodPicker
 import com.ben.tribunewsdemo.view.adapter.items.UploadPhotoItem
 import com.ben.tribunewsdemo.viewmodel.UploadPhotoViewModel
@@ -47,13 +50,13 @@ import java.util.*
  * Use the [UploadPhotoFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody> {
+class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddListener {
 
     private val uploadPhotoViewModel: UploadPhotoViewModel by activityViewModels()
     private lateinit var currentPhotoPath: String
 
     private lateinit var uploadPhotoRecyclerView: RecyclerView
-    private lateinit var uploadPhotoGridLayout: GridLayout
+    private lateinit var addPhotosText: TextView
     private lateinit var sendButton: MaterialButton
 
     private val itemAdapter = ItemAdapter<UploadPhotoItem>()
@@ -71,16 +74,16 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody> {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         uploadPhotoViewModel.callbackListener = this
-
+        uploadPhotoViewModel.onAddListener = this
         uploadPhotoRecyclerView = view.findViewById(R.id.upload_photo_rv)
+        addPhotosText = view.findViewById(R.id.add_photo_tv)
+
         uploadPhotoRecyclerView.apply {
             this.adapter = fastAdapter
         }
 
-        uploadPhotoGridLayout = view.findViewById(R.id.upload_photo_gridLayout)
         sendButton = view.findViewById(R.id.send_button)
-        fastAdapter.onClickListener = { v, adapter, item, position ->
-
+        fastAdapter.onClickListener = { _, adapter, item, position ->
             Log.d("Test", "item: ${item.fileUri}")
             Log.d("Test", "position: $position")
             Log.d("Test", "adapter: ${adapter.getAdapterItem(position).fileUri}")
@@ -88,8 +91,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody> {
             true
         }
 
-
-        uploadPhotoGridLayout.setOnClickListener {
+        addPhotosText.setOnClickListener {
             Log.d("Test", "Clicked there")
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (context?.let { it1 -> checkSelfPermission(
@@ -158,6 +160,10 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody> {
 
     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
         Log.d("Test", "onFailure: ${t.message}")
+    }
+
+    override fun onOverCapacity() {
+        Toast.makeText(requireContext(), "Please load only 4 items.", Toast.LENGTH_SHORT).show()
     }
 
 

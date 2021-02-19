@@ -12,7 +12,6 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -38,13 +37,16 @@
         </GridLayout>
 
         <TextView
-            android:id="@+id/choose_indicator_text"
+            android:id="@+id/add_photo_tv"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:padding="4dp"
-            android:text="Click to add files"
+            android:layout_margin="12dp"
+            android:text="@string/click_add_files"
             android:textAlignment="center"
             android:textStyle="italic"
+            android:textSize="14sp"
+            android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/upload_photo_gridLayout" />
@@ -55,10 +57,11 @@
             android:onClick="@{() -> uploadPhotoViewModel.onUpload()}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:text="@string/upload_an_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/choose_indicator_text" />
+            app:layout_constraintTop_toBottomOf="@+id/add_photo_tv" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

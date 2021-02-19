@@ -4,6 +4,10 @@ import android.view.View
 import android.widget.ImageView
 import com.ben.tribunewsdemo.R
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.imageview.ShapeableImageView
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 
@@ -19,9 +23,6 @@ class UploadPhotoItem(val fileUri: String? = null): AbstractItem<UploadPhotoItem
     }
 
 
-    override var isEnabled: Boolean
-        get() = true
-        set(value) {}
 
     inner class UploadPhotoItemViewHolder(v: View): FastAdapter.ViewHolder<UploadPhotoItem>(v) {
 
@@ -31,8 +32,7 @@ class UploadPhotoItem(val fileUri: String? = null): AbstractItem<UploadPhotoItem
             Glide
             .with(displayedPhoto)
             .load(item.fileUri)
-            .centerCrop()
-            .placeholder(R.drawable.image_view_border)
+            .apply(RequestOptions().transform(CenterCrop(), RoundedCorners(60)))
             .into(displayedPhoto)
         }
 
