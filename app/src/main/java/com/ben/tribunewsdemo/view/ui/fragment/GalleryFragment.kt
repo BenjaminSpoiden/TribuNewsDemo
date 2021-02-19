@@ -1,26 +1,20 @@
-package com.ben.tribunewsdemo.fragment
+package com.ben.tribunewsdemo.view.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ben.tribunewsdemo.R
-import com.ben.tribunewsdemo.api.ApiService
-import com.ben.tribunewsdemo.api.RetrofitClientInstance
-import com.ben.tribunewsdemo.items.PhotoItem
-import com.ben.tribunewsdemo.utils.BASE_URL
+import com.ben.tribunewsdemo.view.adapter.items.PhotoItem
+import com.ben.tribunewsdemo.viewmodel.GalleryViewModel
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import kotlinx.coroutines.*
-import retrofit2.Retrofit
-import retrofit2.awaitResponse
-import retrofit2.converter.gson.GsonConverterFactory
 
 /**
  * A simple [Fragment] subclass.
@@ -28,6 +22,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  * create an instance of this fragment.
  */
 class GalleryFragment : Fragment() {
+
+    private val galleryViewModel: GalleryViewModel by activityViewModels()
 
     private lateinit var photoRecyclerView: RecyclerView
     private lateinit var galleryProgressBar: ProgressBar
@@ -54,28 +50,15 @@ class GalleryFragment : Fragment() {
             this.layoutManager = GridLayoutManager(context, 3)
         }
 
-        val tribuNewsService = RetrofitClientInstance.retrofitInstance?.create(ApiService::class.java)
+        galleryViewModel.onFetchGallery()
+        galleryViewModel.galleryResponse.observe(viewLifecycleOwner, {
+            galleryProgressBar.visibility = View.GONE
+            galleryLoadingText.visibility = View.GONE
 
-        //Input Output dispatcher for managing data
-
-        CoroutineScope(Dispatchers.IO).launch {
-
-            val response = tribuNewsService?.onGetAllPictures()?.awaitResponse() ?: return@launch
-            if(response.isSuccessful) {
-                val data = response.body()!!
-                Log.d("test", "${data.files.size}")
-
-                //Dispatchers.Main to make changes on the UI
-                withContext(Dispatchers.Main) {
-                    galleryProgressBar.visibility = View.GONE
-                    galleryLoadingText.visibility = View.GONE
-                    data.files.forEach {
-                        itemAdapter.add(PhotoItem(it))
-                    }
-                    fastAdapter.notifyAdapterDataSetChanged()
-                }
+            it.files.forEach { file ->
+                itemAdapter.add(PhotoItem(file))
             }
-        }
+        })
     }
 
     companion object {

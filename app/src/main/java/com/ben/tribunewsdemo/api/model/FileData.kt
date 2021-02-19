@@ -1,6 +1,6 @@
 package com.ben.tribunewsdemo.api.model
 
 
-data class Images(
+data class FileData(
     val files: List<String>
 )
