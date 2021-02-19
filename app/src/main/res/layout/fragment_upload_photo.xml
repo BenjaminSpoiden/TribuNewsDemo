@@ -30,6 +30,7 @@
                 android:id="@+id/upload_photo_rv"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"
+                android:overScrollMode="never"
                 tools:listitem="@layout/upload_photo_item"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:spanCount="2" />

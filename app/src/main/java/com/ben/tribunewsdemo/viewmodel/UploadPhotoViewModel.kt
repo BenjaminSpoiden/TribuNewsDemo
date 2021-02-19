@@ -54,9 +54,15 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
     fun onAddItem(fileUri: Uri) {
         if(filesUri.value?.size!! < 4) {
             _filesUri.value?.add(fileUri)
+            onAddListener?.onItemAdded()
         } else {
             onAddListener?.onOverCapacity()
         }
+    }
+
+    fun onRemoveItem(position: Int): LiveData<MutableList<Uri>> {
+        _filesUri.value?.removeAt(position)
+        return filesUri
     }
 
     fun onUpload() {

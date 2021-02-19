@@ -15,7 +15,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -79,20 +78,21 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         addPhotosText = view.findViewById(R.id.add_photo_tv)
 
         uploadPhotoRecyclerView.apply {
+            fastAdapter.setHasStableIds(true)
             this.adapter = fastAdapter
         }
 
+
         sendButton = view.findViewById(R.id.send_button)
         fastAdapter.onClickListener = { _, adapter, item, position ->
-            Log.d("Test", "item: ${item.fileUri}")
-            Log.d("Test", "position: $position")
-            Log.d("Test", "adapter: ${adapter.getAdapterItem(position).fileUri}")
-
+            uploadPhotoViewModel.onRemoveItem(position).observe(viewLifecycleOwner) {
+                itemAdapter.remove(position)
+                fastAdapter.notifyAdapterItemRemoved(position)
+            }
             true
         }
 
         addPhotosText.setOnClickListener {
-            Log.d("Test", "Clicked there")
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (context?.let { it1 -> checkSelfPermission(
                         it1,
@@ -100,14 +100,17 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                     ) } == PackageManager.PERMISSION_DENIED){
                     val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
                     requestPermissions(permissions, PERMISSION_CODE)
-                } else{
+                } else {
                    onMediaPick(it.context)
                 }
             }else {
                onMediaPick(it.context)
             }
         }
+
+        onItemAdded()
     }
+
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -116,6 +119,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             when(requestCode) {
                 IMAGE_CAPTURE -> {
                     if (resultCode == Activity.RESULT_OK) {
+                        Log.d("Test", "Image Capture")
                         uploadPhotoViewModel.onAddItem(Uri.fromFile(File(currentPhotoPath)))
                     }
                 }
@@ -123,6 +127,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                     if (resultCode == Activity.RESULT_OK && data != null) {
                         if (data.clipData != null) {
                             for (i in 0 until data.clipData!!.itemCount) {
+                                Log.d("Test", "Image Choose")
                                 data.clipData?.getItemAt(i)?.uri?.let {
                                     uploadPhotoViewModel.onAddItem(it)
                                 }
@@ -135,17 +140,6 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                     }
                 }
             }
-        }
-
-        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
-            Log.d("Test", "We are in")
-            it.forEach { uri ->
-                itemAdapter.add(UploadPhotoItem(uri.toString()))
-            }
-        })
-
-        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
-            sendButton.isEnabled = it
         }
     }
 
@@ -164,6 +158,21 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
 
     override fun onOverCapacity() {
         Toast.makeText(requireContext(), "Please load only 4 items.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onItemAdded() {
+        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
+            Log.d("Test", "List Observer")
+            Log.d("Test", "size: ${it.size}")
+            itemAdapter.clear()
+            it.forEachIndexed { index, uri ->
+                itemAdapter.add(UploadPhotoItem(uri, requireContext()))
+            }
+        })
+
+        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
+            sendButton.isEnabled = it
+        }
     }
 
 
@@ -194,7 +203,6 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                                 file
                             )
                             Log.d("Test", "Photo URI: $photoURI")
-//                            uploadPhotoViewModel.onAddItem(photoURI)
 
                             takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                             Log.d("Test", "Take Pic: ${takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)}")
@@ -221,7 +229,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
     }
 
 
-    private fun onAddPicToGallery() {
+    private fun onAddPicToPhoneGallery() {
         val file = File(currentPhotoPath)
         MediaScannerConnection.scanFile(requireContext(), arrayOf(file.toString()), arrayOf(file.name), null)
     }
@@ -239,7 +247,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
-            onAddPicToGallery()
+            onAddPicToPhoneGallery()
         }
     }
 
