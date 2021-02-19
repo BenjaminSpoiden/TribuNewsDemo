@@ -3,8 +3,6 @@ package com.ben.tribunewsdemo.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.util.Log
-import androidx.databinding.BaseObservable
-import androidx.databinding.Bindable
 import androidx.lifecycle.*
 import com.ben.tribunewsdemo.api.network.TribuNewsNetwork
 import com.ben.tribunewsdemo.interfaces.CallbackListener
@@ -18,28 +16,27 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.http.Part
-import java.util.*
 
 class UploadPhotoViewModel(application: Application): AndroidViewModel(application) {
     var callbackListener: CallbackListener<ResponseBody>? = null
 
-    var isEnabledButton = false
-
     private val _filesUri: MutableLiveData<MutableList<Uri>> = MutableLiveData(mutableListOf())
-    val fileUri: LiveData<List<Uri>>
+    val filesUri: LiveData<List<Uri>>
         get() = _filesUri as LiveData<List<Uri>>
 
 
     private val _isEnabled: MutableLiveData<Boolean> = MutableLiveData(false)
     val isEnabled: LiveData<Boolean>
         get() {
-            _isEnabled.value = fileUri.value?.size!! > 0
+            _isEnabled.value = filesUri.value?.isNotEmpty()
             return _isEnabled
         }
 
-    private fun onUploadPhoto(@Part file: MultipartBody.Part) {
+    private fun onUploadPhotos(
+        @Part files: List<MultipartBody.Part>
+    ) {
         viewModelScope.launch {
-           TribuNewsNetwork.retrofit?.onUploadPicture(file)?.enqueue(object: Callback<ResponseBody> {
+           TribuNewsNetwork.retrofit?.onUploadPicture(files)?.enqueue(object: Callback<ResponseBody> {
                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                    callbackListener?.onResponse(call, response)
                }
@@ -52,20 +49,19 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
     }
 
     fun onAddItem(fileUri: Uri) {
-        Log.d("Test", "onAddItem")
         _filesUri.value?.add(fileUri)
     }
 
     fun onUpload() {
-        Log.d("Test", "onUpload: ${_filesUri.value?.size}")
-        val files = getFiles(getApplication(), fileUri.value)
-        Log.d("Test", "Files: $files")
+        val files = getFiles(getApplication(), filesUri.value)
+        val parts: ArrayList<MultipartBody.Part> = ArrayList()
         files?.forEach { file ->
             val requestFile = RequestBody.create(MediaType.parse("image/*"), file)
 
             val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            onUploadPhoto(body)
+            parts.add(body)
         }
+        onUploadPhotos(parts)
     }
 
     fun onClearItems() {

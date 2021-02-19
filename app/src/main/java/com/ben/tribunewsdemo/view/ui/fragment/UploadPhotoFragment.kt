@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -136,7 +135,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody> {
             }
         }
 
-        uploadPhotoViewModel.fileUri.observe(viewLifecycleOwner, {
+        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
             Log.d("Test", "We are in")
             it.forEach { uri ->
                 itemAdapter.add(UploadPhotoItem(uri.toString()))
