@@ -83,12 +83,13 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         }
 
         sendButton = view.findViewById(R.id.send_button)
-        fastAdapter.onClickListener = { _, adapter, item, position ->
-            Log.d("Test", "item: ${item.fileUri}")
-            Log.d("Test", "position: $position")
-            Log.d("Test", "adapter: ${adapter.getAdapterItem(position).fileUri}")
+        fastAdapter.onClickListener = { v, adapter, item, position ->
+            Log.d("Test", "$position")
+//            uploadPhotoViewModel.onRemoveItem().observe(viewLifecycleOwner) {
+//                fastAdapter.notifyAdapterItemRemoved(position)
+//            }
 
-            true
+            false
         }
 
         addPhotosText.setOnClickListener {
@@ -107,6 +108,8 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                onMediaPick(it.context)
             }
         }
+
+        observerSates()
     }
 
 
@@ -137,16 +140,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             }
         }
 
-        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
-            Log.d("Test", "We are in")
-            it.forEach { uri ->
-                itemAdapter.add(UploadPhotoItem(uri.toString()))
-            }
-        })
-
-        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
-            sendButton.isEnabled = it
-        }
+        observerSates()
     }
 
 
@@ -194,7 +188,6 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                                 file
                             )
                             Log.d("Test", "Photo URI: $photoURI")
-//                            uploadPhotoViewModel.onAddItem(photoURI)
 
                             takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                             Log.d("Test", "Take Pic: ${takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)}")
@@ -218,6 +211,20 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             }
         }
         dialogBuilder.show()
+    }
+
+    private fun observerSates() {
+        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
+            Log.d("Test", "We are in")
+            itemAdapter.clear()
+            it.forEach { uri ->
+                itemAdapter.add(UploadPhotoItem(uri.toString()))
+            }
+        })
+
+        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
+            sendButton.isEnabled = it
+        }
     }
 
 

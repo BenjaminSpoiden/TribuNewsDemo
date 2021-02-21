@@ -16,6 +16,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.await
 import retrofit2.http.Part
 
 
@@ -36,18 +37,18 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         }
 
     private fun onUploadPhotos(
-        @Part files: List<MultipartBody.Part>
+            @Part files: List<MultipartBody.Part>
     ) {
         viewModelScope.launch {
-           TribuNewsNetwork.retrofit?.onUploadPictures(files)?.enqueue(object: Callback<ResponseBody> {
-               override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                   callbackListener?.onResponse(call, response)
-               }
+            TribuNewsNetwork.retrofit?.onUploadPictures(files)?.enqueue(object: Callback<ResponseBody> {
+                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    callbackListener?.onResponse(call, response)
+                }
 
-               override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                   callbackListener?.onFailure(call, t)
-               }
-           })
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    callbackListener?.onFailure(call, t)
+                }
+            })
         }
     }
 
@@ -57,6 +58,11 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         } else {
             onAddListener?.onOverCapacity()
         }
+    }
+
+    fun onRemoveItem(position: Int): LiveData<MutableList<Uri>> {
+        _filesUri.value?.removeAt(position)
+        return filesUri
     }
 
     fun onUpload() {
