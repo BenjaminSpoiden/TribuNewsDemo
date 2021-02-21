@@ -2,7 +2,6 @@ package com.ben.tribunewsdemo.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.*
 import com.ben.tribunewsdemo.api.network.TribuNewsNetwork
 import com.ben.tribunewsdemo.interfaces.CallbackListener
@@ -16,7 +15,6 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.await
 import retrofit2.http.Part
 
 
@@ -37,7 +35,7 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         }
 
     private fun onUploadPhotos(
-            @Part files: List<MultipartBody.Part>
+        @Part files: List<MultipartBody.Part>
     ) {
         viewModelScope.launch {
             TribuNewsNetwork.retrofit?.onUploadPictures(files)?.enqueue(object: Callback<ResponseBody> {
@@ -55,14 +53,16 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
     fun onAddItem(fileUri: Uri) {
         if(filesUri.value?.size!! < 4) {
             _filesUri.value?.add(fileUri)
+            onAddListener?.onItemAdded()
         } else {
             onAddListener?.onOverCapacity()
         }
     }
 
-    fun onRemoveItem(position: Int): LiveData<MutableList<Uri>> {
-        _filesUri.value?.removeAt(position)
-        return filesUri
+    fun onRemoveItem(position: Int) {
+        _filesUri.value?.size?.let {
+            _filesUri.value?.removeAt(position)
+        }
     }
 
     fun onUpload() {

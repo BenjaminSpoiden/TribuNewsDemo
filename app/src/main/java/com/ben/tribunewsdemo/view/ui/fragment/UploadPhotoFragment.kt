@@ -1,6 +1,7 @@
 package com.ben.tribunewsdemo.view.ui.fragment
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -15,7 +16,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -30,12 +30,10 @@ import com.ben.tribunewsdemo.databinding.FragmentUploadPhotoBinding
 import com.ben.tribunewsdemo.interfaces.CallbackListener
 import com.ben.tribunewsdemo.interfaces.OnAddListener
 import com.ben.tribunewsdemo.utils.PhotoMethodPicker
-import com.ben.tribunewsdemo.view.adapter.items.UploadPhotoItem
+import com.ben.tribunewsdemo.view.adapter.UploadPhotoAdapter
 import com.ben.tribunewsdemo.viewmodel.UploadPhotoViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
-import com.mikepenz.fastadapter.FastAdapter
-import com.mikepenz.fastadapter.adapters.ItemAdapter
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
@@ -44,28 +42,21 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-/**
- * A simple [Fragment] subclass.
- * Use the [UploadPhotoFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddListener {
 
     private val uploadPhotoViewModel: UploadPhotoViewModel by activityViewModels()
     private lateinit var currentPhotoPath: String
 
     private lateinit var uploadPhotoRecyclerView: RecyclerView
+    private lateinit var uploadPhotoAdapter: UploadPhotoAdapter
     private lateinit var addPhotosText: TextView
     private lateinit var sendButton: MaterialButton
 
-    private val itemAdapter = ItemAdapter<UploadPhotoItem>()
-    private val fastAdapter = FastAdapter.with(itemAdapter)
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val binding = FragmentUploadPhotoBinding.inflate(inflater, container, false)
         binding.uploadPhotoViewModel = uploadPhotoViewModel
         return binding.root
@@ -76,40 +67,54 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         uploadPhotoViewModel.callbackListener = this
         uploadPhotoViewModel.onAddListener = this
         uploadPhotoRecyclerView = view.findViewById(R.id.upload_photo_rv)
+        uploadPhotoAdapter = UploadPhotoAdapter(mutableListOf())
         addPhotosText = view.findViewById(R.id.add_photo_tv)
 
         uploadPhotoRecyclerView.apply {
-            this.adapter = fastAdapter
+            this.adapter?.setHasStableIds(true)
+            this.adapter = uploadPhotoAdapter
         }
+
         sendButton = view.findViewById(R.id.send_button)
 
-        fastAdapter.onLongClickListener = { v, adapter, item, position ->
-            uploadPhotoViewModel.onRemoveItem(position)
-            itemAdapter.remove(position)
-            fastAdapter.notifyAdapterItemRemoved(position)
-            observerSates()
-            false
+        uploadPhotoAdapter.onItemClickListener = {
+            Toast.makeText(requireContext(), "Appuyez longement pour effacer une photo", Toast.LENGTH_SHORT).show()
+
         }
 
+        uploadPhotoAdapter.onItemLongClickListener = {
+            uploadPhotoViewModel.onRemoveItem(it)
+            Log.d("Test", "Delete at pos $it")
+            uploadPhotoAdapter.onRemoveItem(it)
+            uploadButtonStateObserver()
+        }
+
+        addPhotoTextListener()
+        onItemAdded()
+    }
+
+    private fun addPhotoTextListener() {
         addPhotosText.setOnClickListener {
-            Log.d("Test", "Clicked there")
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (context?.let { it1 -> checkSelfPermission(
-                                it1,
-                                Manifest.permission.READ_EXTERNAL_STORAGE
-                        ) } == PackageManager.PERMISSION_DENIED){
-                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    requestPermissions(permissions, PERMISSION_CODE)
-                } else{
-                    onMediaPick(it.context)
+                when (PackageManager.PERMISSION_DENIED) {
+                    checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) -> {
+                        val permission = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        requestPermissions(permission, PERMISSION_CODE)
+                    }
+                    checkSelfPermission(requireContext(), Manifest.permission.CAMERA) -> {
+                        val permission = arrayOf(Manifest.permission.CAMERA)
+                        requestPermissions(permission, PERMISSION_CODE)
+                    }
+                    else -> {
+                        onMediaPick(it.context)
+                    }
                 }
             }else {
                 onMediaPick(it.context)
             }
         }
-
-        observerSates()
     }
+
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -138,17 +143,17 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                 }
             }
         }
-
-        observerSates()
     }
 
 
     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        Log.d("Test", "Response: ${response.raw().body()}")
-        Snackbar.make(requireView(), "Photos successfully Loaded", 3000).show()
+        Snackbar.make(requireView(), "Photos uploadées avec succès.", Snackbar.LENGTH_SHORT)
+            .setAnchorView(requireActivity().findViewById(R.id.bottomNavigationView))
+            .show()
         uploadPhotoViewModel.onClearItems()
-        itemAdapter.clear()
-        fastAdapter.notifyAdapterDataSetChanged()
+        uploadPhotoAdapter.onClearItems()
+
+        uploadButtonStateObserver()
     }
 
     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
@@ -156,22 +161,39 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
     }
 
     override fun onOverCapacity() {
-        Toast.makeText(requireContext(), "Please load only 4 items.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Ne choisissez pas plus de 4 photos.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onItemAdded() {
+        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
+            it.forEachIndexed { position, uri ->
+                uploadPhotoAdapter.onAddPhoto(position, uri)
+            }
+        })
+        uploadButtonStateObserver()
+    }
+
+    private fun uploadButtonStateObserver() {
+        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
+            sendButton.isEnabled = it
+        }
     }
 
 
     private fun onMediaPick(context: Context) {
         val options = arrayOf(
-                PhotoMethodPicker.TAKE_PHOTO.method,
-                PhotoMethodPicker.TAKE_GALLERY.method,
-                PhotoMethodPicker.CANCEL.method
+            PhotoMethodPicker.TAKE_PHOTO.method,
+            PhotoMethodPicker.TAKE_GALLERY.method,
+            PhotoMethodPicker.CANCEL.method
         )
 
+        var intent: Intent
+
         val dialogBuilder = AlertDialog.Builder(context)
-        dialogBuilder.setTitle("Choose your method")
+        dialogBuilder.setTitle("Choisissez votre méthode")
         dialogBuilder.setItems(options) { dialog, which ->
             if(options[which] == PhotoMethodPicker.TAKE_PHOTO.method) {
-                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePicIntent ->
+                intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePicIntent ->
                     takePicIntent.also {
                         val photoFile: File? = try {
                             createImageFile()
@@ -179,31 +201,28 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                             Log.d("Test", "Exception: $ex")
                             null
                         }
-                        Log.d("Test", "Photo File: $photoFile")
                         photoFile?.also { file ->
                             val photoURI = FileProvider.getUriForFile(
-                                    requireContext().applicationContext,
-                                    BuildConfig.APPLICATION_ID + ".provider",
-                                    file
+                                requireContext().applicationContext,
+                                BuildConfig.APPLICATION_ID + ".provider",
+                                file
                             )
-                            Log.d("Test", "Photo URI: $photoURI")
 
                             takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                            Log.d("Test", "Take Pic: ${takePicIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)}")
                         }
                     }
                 }
                 startActivityForResult(intent, IMAGE_CAPTURE)
             }
             if(options[which] == PhotoMethodPicker.TAKE_GALLERY.method) {
-                val intent = Intent(
-                        Intent.ACTION_PICK,
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                intent = Intent(
+                    Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                 )
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 intent.action = Intent.ACTION_GET_CONTENT
                 intent.type = "image/*"
-                startActivityForResult(Intent.createChooser(intent, "Select Photos"), IMAGE_CHOOSE)
+                startActivityForResult(Intent.createChooser(intent, "Sélectionnez des photos"), IMAGE_CHOOSE)
             }
             if(options[which] == PhotoMethodPicker.CANCEL.method) {
                 dialog.dismiss()
@@ -212,50 +231,38 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         dialogBuilder.show()
     }
 
-    private fun observerSates() {
-        uploadPhotoViewModel.filesUri.observe(viewLifecycleOwner, {
-            Log.d("Test", "We are in")
-            itemAdapter.clear()
-            it.forEach { uri ->
-                itemAdapter.add(UploadPhotoItem(uri.toString()))
-            }
-            fastAdapter.notifyAdapterDataSetChanged()
-        })
 
-        uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
-            sendButton.isEnabled = it
-        }
-    }
-
-
-    private fun onAddPicToGallery() {
+    private fun onAddPicToPhoneGallery() {
         val file = File(currentPhotoPath)
         MediaScannerConnection.scanFile(requireContext(), arrayOf(file.toString()), arrayOf(file.name), null)
     }
 
+    @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
     private fun createImageFile(): File {
         // Create an image file name
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        Log.d("Test", "Storage Dir: $storageDir")
         return File.createTempFile(
-                "JPEG_${timeStamp}_", /* prefix */
-                ".jpg", /* suffix */
-                storageDir /* directory */
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
-            onAddPicToGallery()
+            onAddPicToPhoneGallery()
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        uploadPhotoViewModel.callbackListener = null
+        uploadPhotoViewModel.onAddListener = null
+    }
 
     companion object {
-        @JvmStatic
-        fun newInstance() = UploadPhotoFragment()
-        private val IMAGE_CHOOSE = 1000
-        private val PERMISSION_CODE = 1001
-        private val IMAGE_CAPTURE = 2000
+        private const val IMAGE_CHOOSE = 1000
+        const val PERMISSION_CODE = 1001
+        private const val IMAGE_CAPTURE = 2000
     }
 }
