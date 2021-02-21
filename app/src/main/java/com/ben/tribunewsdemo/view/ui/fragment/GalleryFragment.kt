@@ -55,13 +55,13 @@ class GalleryFragment : Fragment() {
         galleryProgressBar = view.findViewById(R.id.gallery_progress_bar)
         galleryLoadingText = view.findViewById(R.id.gallery_loading_text)
 
-        galleryViewModel.onFetchGallery()
-        setInitialData()
         setAdapterAndLayout()
+        setInitialData()
         setScrollListener()
     }
 
     private fun setInitialData() {
+        galleryViewModel.onFetchGallery()
         galleryViewModel.galleryResponse.observe(viewLifecycleOwner, {
             galleryProgressBar.visibility = View.GONE
             galleryLoadingText.visibility = View.GONE
@@ -73,7 +73,7 @@ class GalleryFragment : Fragment() {
     private fun setAdapterAndLayout() {
         photoAdapter = PhotoAdapter(mutableListOf())
         gridLayoutManager = GridLayoutManager(requireContext(), 3)
-
+        photoAdapter.notifyDataSetChanged()
         photoRecyclerView.apply {
             this.layoutManager = gridLayoutManager
             this.setHasFixedSize(true)
@@ -119,21 +119,19 @@ class GalleryFragment : Fragment() {
                     if(i < it.files.size - 1) {
                         Log.d("Test", "Can add")
                         photoAdapter.onAddPhoto(it.files[i], i)
-                        photoAdapter.notifyItemInserted(i)
+                        photoAdapter.removeLoadingView()
+                        infiniteScrollListener.setLoaded()
                     }
-                    photoAdapter.removeLoadingView()
-                    infiniteScrollListener.setLoaded()
+
                 }
             }
 
-
             photoRecyclerView.post {
                 photoAdapter.notifyDataSetChanged()
+
             }
 
         }, 1000)
-
-
     }
 
     companion object {
