@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -73,7 +74,6 @@ class GalleryFragment : Fragment() {
     private fun setAdapterAndLayout() {
         photoAdapter = PhotoAdapter(mutableListOf())
         gridLayoutManager = GridLayoutManager(requireContext(), 3)
-        photoAdapter.notifyDataSetChanged()
         photoRecyclerView.apply {
             this.layoutManager = gridLayoutManager
             this.setHasFixedSize(true)
@@ -104,33 +104,22 @@ class GalleryFragment : Fragment() {
 
     private fun onMoreLoaded() {
         photoAdapter.addLoadingView()
-        Log.d("Test", "Loaded more...")
         val start = photoAdapter.itemCount
-        val offset = start + LIMIT
-
-        Log.d("Test", "start: $start")
-        Log.d("Test", "offset: $offset")
+        val offset = start + LIMIT - 1
 
         Handler().postDelayed({
             galleryViewModel.galleryResponse.observe(viewLifecycleOwner) {
+                photoAdapter.removeLoadingView()
                 for(i in start..offset) {
-                    Log.d("Test", "i pos: $i")
-                    Log.d("Test", "files: ${it.files.size}")
                     if(i < it.files.size - 1) {
-                        Log.d("Test", "Can add")
                         photoAdapter.onAddPhoto(it.files[i], i)
-                        photoAdapter.removeLoadingView()
-                        infiniteScrollListener.setLoaded()
+                    } else {
+                        Toast.makeText(requireContext(), "Plus de données", Toast.LENGTH_SHORT).show()
+
                     }
-
                 }
+                infiniteScrollListener.setLoaded()
             }
-
-            photoRecyclerView.post {
-                photoAdapter.notifyDataSetChanged()
-
-            }
-
         }, 1000)
     }
 
