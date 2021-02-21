@@ -88,7 +88,6 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
 //            uploadPhotoViewModel.onRemoveItem().observe(viewLifecycleOwner) {
 //                fastAdapter.notifyAdapterItemRemoved(position)
 //            }
-
             false
         }
 
