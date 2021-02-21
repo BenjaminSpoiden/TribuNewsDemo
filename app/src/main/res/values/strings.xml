@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">TribuNewsDemo</string>
-    <string name="upload_photo">Upload Photo</string>
-    <string name="gallery">Gallery</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="upload_photo">Upload</string>
+    <string name="gallery">Gallerie</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="loading_data">Loading data…</string>
-    <string name="upload_an_image">Upload images</string>
-    <string name="click_add_files">Click here to add files</string>
+    <string name="loading_data">Chargement des données…</string>
+    <string name="upload_an_image">Uploadez des photos</string>
+    <string name="click_add_files">Appuyez ici pour ajouter des photos (Max. 4)</string>
 </resources>

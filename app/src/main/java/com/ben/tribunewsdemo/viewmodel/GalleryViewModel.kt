@@ -1,9 +1,6 @@
 package com.ben.tribunewsdemo.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.ben.tribunewsdemo.api.network.TribuNewsNetwork
 import com.ben.tribunewsdemo.api.model.FileData
 import kotlinx.coroutines.launch
@@ -19,4 +16,5 @@ class GalleryViewModel: ViewModel() {
             _galleryResponse.value = TribuNewsNetwork.retrofit?.onGetAllPictures() ?: return@launch
         }
     }
+
 }

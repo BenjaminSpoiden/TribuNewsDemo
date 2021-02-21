@@ -2,7 +2,6 @@ package com.ben.tribunewsdemo.viewmodel
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.*
 import com.ben.tribunewsdemo.api.network.TribuNewsNetwork
 import com.ben.tribunewsdemo.interfaces.CallbackListener
@@ -60,9 +59,10 @@ class UploadPhotoViewModel(application: Application): AndroidViewModel(applicati
         }
     }
 
-    fun onRemoveItem(position: Int): LiveData<MutableList<Uri>> {
-        _filesUri.value?.removeAt(position)
-        return filesUri
+    fun onRemoveItem(position: Int) {
+        _filesUri.value?.size?.let {
+            _filesUri.value?.removeAt(position)
+        }
     }
 
     fun onUpload() {
