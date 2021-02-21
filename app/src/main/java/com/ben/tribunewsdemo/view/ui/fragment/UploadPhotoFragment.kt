@@ -63,8 +63,8 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentUploadPhotoBinding.inflate(inflater, container, false)
         binding.uploadPhotoViewModel = uploadPhotoViewModel
@@ -84,11 +84,10 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         sendButton = view.findViewById(R.id.send_button)
 
         fastAdapter.onLongClickListener = { v, adapter, item, position ->
-            Log.d("Test", "$position")
-            uploadPhotoViewModel.onRemoveItem(position).observe(viewLifecycleOwner) {
-                itemAdapter.remove(position)
-                fastAdapter.notifyAdapterItemRemoved(position)
-            }
+            uploadPhotoViewModel.onRemoveItem(position)
+            itemAdapter.remove(position)
+            fastAdapter.notifyAdapterItemRemoved(position)
+            observerSates()
             false
         }
 
@@ -96,16 +95,16 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             Log.d("Test", "Clicked there")
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (context?.let { it1 -> checkSelfPermission(
-                        it1,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) } == PackageManager.PERMISSION_DENIED){
+                                it1,
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) } == PackageManager.PERMISSION_DENIED){
                     val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
                     requestPermissions(permissions, PERMISSION_CODE)
                 } else{
-                   onMediaPick(it.context)
+                    onMediaPick(it.context)
                 }
             }else {
-               onMediaPick(it.context)
+                onMediaPick(it.context)
             }
         }
 
@@ -163,9 +162,9 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
 
     private fun onMediaPick(context: Context) {
         val options = arrayOf(
-            PhotoMethodPicker.TAKE_PHOTO.method,
-            PhotoMethodPicker.TAKE_GALLERY.method,
-            PhotoMethodPicker.CANCEL.method
+                PhotoMethodPicker.TAKE_PHOTO.method,
+                PhotoMethodPicker.TAKE_GALLERY.method,
+                PhotoMethodPicker.CANCEL.method
         )
 
         val dialogBuilder = AlertDialog.Builder(context)
@@ -183,9 +182,9 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
                         Log.d("Test", "Photo File: $photoFile")
                         photoFile?.also { file ->
                             val photoURI = FileProvider.getUriForFile(
-                                requireContext().applicationContext,
-                                BuildConfig.APPLICATION_ID + ".provider",
-                                file
+                                    requireContext().applicationContext,
+                                    BuildConfig.APPLICATION_ID + ".provider",
+                                    file
                             )
                             Log.d("Test", "Photo URI: $photoURI")
 
@@ -198,8 +197,8 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             }
             if(options[which] == PhotoMethodPicker.TAKE_GALLERY.method) {
                 val intent = Intent(
-                    Intent.ACTION_PICK,
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                        Intent.ACTION_PICK,
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                 )
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 intent.action = Intent.ACTION_GET_CONTENT
@@ -241,9 +240,9 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         val storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         Log.d("Test", "Storage Dir: $storageDir")
         return File.createTempFile(
-            "JPEG_${timeStamp}_", /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
+                "JPEG_${timeStamp}_", /* prefix */
+                ".jpg", /* suffix */
+                storageDir /* directory */
         ).apply {
             // Save a file: path for use with ACTION_VIEW intents
             currentPhotoPath = absolutePath
