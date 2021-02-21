@@ -81,13 +81,14 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
         uploadPhotoRecyclerView.apply {
             this.adapter = fastAdapter
         }
-
         sendButton = view.findViewById(R.id.send_button)
-        fastAdapter.onClickListener = { v, adapter, item, position ->
+
+        fastAdapter.onLongClickListener = { v, adapter, item, position ->
             Log.d("Test", "$position")
-//            uploadPhotoViewModel.onRemoveItem().observe(viewLifecycleOwner) {
-//                fastAdapter.notifyAdapterItemRemoved(position)
-//            }
+            uploadPhotoViewModel.onRemoveItem(position).observe(viewLifecycleOwner) {
+                itemAdapter.remove(position)
+                fastAdapter.notifyAdapterItemRemoved(position)
+            }
             false
         }
 
@@ -219,6 +220,7 @@ class UploadPhotoFragment : Fragment(), CallbackListener<ResponseBody>, OnAddLis
             it.forEach { uri ->
                 itemAdapter.add(UploadPhotoItem(uri.toString()))
             }
+            fastAdapter.notifyAdapterDataSetChanged()
         })
 
         uploadPhotoViewModel.isEnabled.observe(viewLifecycleOwner) {
