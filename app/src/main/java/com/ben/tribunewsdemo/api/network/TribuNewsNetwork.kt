@@ -1,7 +1,7 @@
 package com.ben.tribunewsdemo.api.network
 
 import com.ben.tribunewsdemo.api.TribuNewsApiService
-import com.ben.tribunewsdemo.utils.BASE_URL
+import com.ben.tribunewsdemo.utils.Constants.BASE_URL
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
