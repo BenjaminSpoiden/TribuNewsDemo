@@ -1,9 +1,7 @@
-package com.ben.tribunewsdemo.items
+package com.ben.tribunewsdemo.view.adapter.items
 
-import android.net.Uri
 import android.view.View
 import android.widget.ImageView
-import android.widget.TextView
 import com.ben.tribunewsdemo.R
 import com.bumptech.glide.Glide
 import com.mikepenz.fastadapter.FastAdapter
@@ -25,7 +23,6 @@ class PhotoItem(val fileUrl: String? = null): AbstractItem<PhotoItem.PhotoViewHo
         private val photo: ImageView = v.findViewById(R.id.photo_image_view)
 
         override fun bindView(item: PhotoItem, payloads: List<Any>) {
-
             Glide
                 .with(photo)
                 .load(item.fileUrl)

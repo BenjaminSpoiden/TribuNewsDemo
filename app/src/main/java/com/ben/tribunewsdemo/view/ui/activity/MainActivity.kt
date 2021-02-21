@@ -1,4 +1,4 @@
-package com.ben.tribunewsdemo
+package com.ben.tribunewsdemo.view.ui.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,6 +6,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.ben.tribunewsdemo.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 

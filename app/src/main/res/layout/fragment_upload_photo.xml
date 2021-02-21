@@ -1,21 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    >
 
-    <!-- TODO: Update blank fragment layout -->
+    <data>
+        <variable
+            name="uploadPhotoViewModel"
+            type="com.ben.tribunewsdemo.viewmodel.UploadPhotoViewModel" />
+    </data>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Upload Fragment"
-        android:textSize="25sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <GridLayout
+            android:id="@+id/upload_photo_gridLayout"
+            android:layout_width="305dp"
+            android:layout_height="305dp"
+            android:background="@drawable/image_view_border"
+            android:useDefaultMargins="true"
+            android:layout_marginTop="120sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/upload_photo_rv"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                tools:listitem="@layout/upload_photo_item"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2" />
+
+        </GridLayout>
+
+        <TextView
+            android:id="@+id/add_photo_tv"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_margin="12dp"
+            android:text="@string/click_add_files"
+            android:textAlignment="center"
+            android:textStyle="italic"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/upload_photo_gridLayout" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/send_button"
+            android:enabled="false"
+            android:onClick="@{() -> uploadPhotoViewModel.onUpload()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/upload_an_image"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/add_photo_tv" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
